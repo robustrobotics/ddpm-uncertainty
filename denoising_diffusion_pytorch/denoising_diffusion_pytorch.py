@@ -475,14 +475,14 @@ class GaussianDiffusion(nn.Module):
         self.channels = self.model.channels
         self.self_condition = self.model.self_condition
 
-        # make image size a tuple of (width, height)
+        # make image size a tuple of (height, width)
         if isinstance(image_size, int):
             self.image_size = (image_size, image_size)
         elif isinstance(image_size, tuple):
-            assert len(image_size) == 2, 'image size must be a tuple of (width, height)'
+            assert len(image_size) == 2, 'image size must be a tuple of (height, width)'
             self.image_size = image_size
         else:
-            raise TypeError('image size must be an int or a tuple of (width, height)')
+            raise TypeError('image size must be an int or a tuple of (height, width)')
 
         self.objective = objective
 
