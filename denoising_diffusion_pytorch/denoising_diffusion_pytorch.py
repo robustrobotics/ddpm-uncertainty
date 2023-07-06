@@ -5,6 +5,7 @@ from random import random
 from functools import partial
 from collections import namedtuple
 from multiprocessing import cpu_count
+from typing import Tuple
 
 import torch
 from torch import nn, einsum
@@ -453,7 +454,7 @@ class GaussianDiffusion(nn.Module):
         self,
         model,
         *,
-        image_size,
+        image_size: int | Tuple[int, int],  # (height, width)
         timesteps = 1000,
         sampling_timesteps = None,
         objective = 'pred_v',
