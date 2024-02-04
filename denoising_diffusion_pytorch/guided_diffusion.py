@@ -5,6 +5,7 @@ from random import random
 from functools import partial
 from collections import namedtuple
 from multiprocessing import cpu_count
+from typing import Tuple, Union
 
 import torch
 from torch import nn, einsum
@@ -425,7 +426,7 @@ class GaussianDiffusion(nn.Module):
         self,
         model,
         *,
-        image_size,
+        image_size: Union[int, Tuple[int, int]],  # (height, width)
         timesteps = 1000,
         sampling_timesteps = None,
         objective = 'pred_noise',
@@ -444,7 +445,14 @@ class GaussianDiffusion(nn.Module):
         self.channels = self.model.channels
         self.self_condition = self.model.self_condition
 
-        self.image_size = image_size
+        # make image size a tuple of (height, width)
+        if isinstance(image_size, int):
+            self.image_size = (image_size, image_size)
+        elif isinstance(image_size, tuple):
+            assert len(image_size) == 2, 'image size must be a tuple of (height, width)'
+            self.image_size = image_size
+        else:
+            raise TypeError('image size must be an int or a tuple of (height, width)')
 
         self.objective = objective
 
@@ -690,7 +698,7 @@ class GaussianDiffusion(nn.Module):
     def sample(self, batch_size = 16, return_all_timesteps = False, cond_fn=None, guidance_kwargs=None):
         image_size, channels = self.image_size, self.channels
         sample_fn = self.p_sample_loop if not self.is_ddim_sampling else self.ddim_sample
-        return sample_fn((batch_size, channels, image_size, image_size), return_all_timesteps = return_all_timesteps, cond_fn=cond_fn, guidance_kwargs=guidance_kwargs)
+        return sample_fn((batch_size, channels, image_size[0], image_size[1]), return_all_timesteps = return_all_timesteps, cond_fn=cond_fn, guidance_kwargs=guidance_kwargs)
 
     @torch.no_grad()
     def interpolate(self, x1, x2, t = None, lam = 0.5):
@@ -761,7 +769,7 @@ class GaussianDiffusion(nn.Module):
 
     def forward(self, img, *args, **kwargs):
         b, c, h, w, device, img_size, = *img.shape, img.device, self.image_size
-        assert h == img_size and w == img_size, f'height and width of image must be {img_size}'
+        assert h == img_size[0] and w == img_size[1], f'height and width of image must be {img_size}'
         t = torch.randint(0, self.num_timesteps, (b,), device=device).long()
 
         img = self.normalize(img)
