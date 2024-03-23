@@ -783,6 +783,7 @@ class Dataset(Dataset):
         folder,
         image_size,
         exts = ['jpg', 'jpeg', 'png', 'tiff'],
+        interpolation = 'bilinear',
         augment_horizontal_flip = False,
         convert_image_to = None
     ):
@@ -792,10 +793,11 @@ class Dataset(Dataset):
         self.paths = [p for ext in exts for p in Path(f'{folder}').glob(f'**/*.{ext}')]
 
         maybe_convert_fn = partial(convert_image_to_fn, convert_image_to) if exists(convert_image_to) else nn.Identity()
+        interpolation=T.InterpolationMode(interpolation)
 
         self.transform = T.Compose([
             T.Lambda(maybe_convert_fn),
-            T.Resize(image_size),
+            T.Resize(image_size, interpolation=interpolation),
             T.RandomHorizontalFlip() if augment_horizontal_flip else nn.Identity(),
             T.CenterCrop(image_size),
             T.ToTensor()
@@ -819,6 +821,7 @@ class Trainer(object):
         *,
         train_batch_size = 16,
         gradient_accumulate_every = 1,
+        interpolation = 'bilinear',
         augment_horizontal_flip = True,
         train_lr = 1e-4,
         train_num_steps = 100000,
@@ -856,7 +859,13 @@ class Trainer(object):
 
         # dataset and dataloader
 
-        self.ds = Dataset(folder, self.image_size, augment_horizontal_flip = augment_horizontal_flip, convert_image_to = convert_image_to)
+        self.ds = Dataset(
+            folder,
+            self.image_size,
+            interpolation = interpolation,
+            augment_horizontal_flip = augment_horizontal_flip,
+            convert_image_to = convert_image_to,
+        )
         dl = DataLoader(self.ds, batch_size = train_batch_size, shuffle = True, pin_memory = True, num_workers = cpu_count())
 
         dl = self.accelerator.prepare(dl)
