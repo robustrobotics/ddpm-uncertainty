@@ -4,7 +4,7 @@
 
 Implementation of <a href="https://arxiv.org/abs/2006.11239">Denoising Diffusion Probabilistic Model</a> in Pytorch. It is a new approach to generative modeling that may <a href="https://ajolicoeur.wordpress.com/the-new-contender-to-gans-score-matching-with-langevin-sampling/">have the potential</a> to rival GANs. It uses denoising score matching to estimate the gradient of the data distribution, followed by Langevin sampling to sample from the true distribution.
 
-This implementation was transcribed from the official Tensorflow version <a href="https://github.com/hojonathanho/diffusion">here</a>
+This implementation was inspired by the official Tensorflow version <a href="https://github.com/hojonathanho/diffusion">here</a>
 
 Youtube AI Educators - <a href="https://www.youtube.com/watch?v=W-O7AZNzbzQ">Yannic Kilcher</a> | <a href="https://www.youtube.com/watch?v=344w5h24-h8">AI Coffeebreak with Letitia</a> | <a href="https://www.youtube.com/watch?v=HoKDTa5jHvg">Outlier</a>
 
@@ -341,5 +341,16 @@ You could consider adding a suitable metric to the training loop yourself after 
     year    = {2023},
     volume  = {abs/2306.12929},
     url     = {https://api.semanticscholar.org/CorpusID:259224568}
+}
+```
+
+```bibtex
+@article{Karras2023AnalyzingAI,
+    title   = {Analyzing and Improving the Training Dynamics of Diffusion Models},
+    author  = {Tero Karras and Miika Aittala and Jaakko Lehtinen and Janne Hellsten and Timo Aila and Samuli Laine},
+    journal = {ArXiv},
+    year    = {2023},
+    volume  = {abs/2312.02696},
+    url     = {https://api.semanticscholar.org/CorpusID:265659032}
 }
 ```
