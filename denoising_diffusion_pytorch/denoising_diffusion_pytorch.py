@@ -846,6 +846,14 @@ class GaussianDiffusion(nn.Module):
 
 # dataset classes
 
+def generate_masks(mask_generator):
+    def __inner__(input_tensor):
+        out = mask_generator(input_tensor)
+        for x in ['img', 'obs', 'mask']:
+            assert hasattr(out, x)
+        return out
+    return __inner__
+
 class Dataset(Dataset):
     def __init__(
         self,
@@ -871,7 +879,7 @@ class Dataset(Dataset):
             T.RandomHorizontalFlip() if augment_horizontal_flip else nn.Identity(),
             T.CenterCrop(image_size),
             T.ToTensor(),
-            T.Lambda(mask_generator) if mask_generator else nn.Identity(),
+            T.Lambda(generate_masks(mask_generator)) if mask_generator else nn.Identity(),
         ])
 
     def __len__(self):
