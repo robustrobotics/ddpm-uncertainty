@@ -1060,6 +1060,7 @@ class Trainer(object):
     def train(self):
         accelerator = self.accelerator
         device = accelerator.device
+        is_masked_observations = self.ema.ema_model.masked_observations
 
         with tqdm(initial = self.step, total = self.train_num_steps, disable = not accelerator.is_main_process) as pbar:
 
@@ -1071,7 +1072,7 @@ class Trainer(object):
                     data = next(self.dl).to(device)
 
                     with self.accelerator.autocast():
-                        if self.model.masked_observation:
+                        if is_masked_observations:
                             img, x_obs, x_obs_mask = data
                             loss = self.model(img, x_obs=x_obs, x_obs_mask=x_obs_mask)
                         else:
@@ -1098,7 +1099,6 @@ class Trainer(object):
                     if self.step != 0 and divisible_by(self.step, self.save_and_sample_every):
                         self.ema.ema_model.eval()
 
-                        is_masked_observations = self.ema.ema_model.masked_observations
                         with torch.inference_mode():
                             milestone = self.step // self.save_and_sample_every
                             batches = num_to_groups(self.num_samples, self.batch_size)
