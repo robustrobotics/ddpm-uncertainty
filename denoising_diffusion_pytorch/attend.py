@@ -1,3 +1,4 @@
+import dataclasses as dc
 from functools import wraps
 from packaging import version
 from collections import namedtuple
@@ -6,11 +7,28 @@ import torch
 from torch import nn, einsum
 import torch.nn.functional as F
 
+from torch.nn.attention import SDPBackend
+
 from einops import rearrange
 
 # constants
 
-AttentionConfig = namedtuple('AttentionConfig', ['enable_flash', 'enable_math', 'enable_mem_efficient'])
+
+@dc.dataclass
+class AttentionConfig:
+    flash: bool
+    math: bool
+    efficient: bool
+
+    def backends(self):
+        backend_list = []
+        if self.flash:
+            backend_list.append(SDPBackend.FLASH_ATTENTION)
+        if self.math:
+            backend_list.append(SDPBackend.MATH)
+        if self.efficient:
+            backend_list.append(SDPBackend.EFFICIENT_ATTENTION)
+        return backend_list
 
 # helpers
 
@@ -82,7 +100,7 @@ class Attend(nn.Module):
 
         # pytorch 2.0 flash attn: q, k, v, mask, dropout, causal, softmax_scale
 
-        with torch.backends.cuda.sdp_kernel(**config._asdict()):
+        with torch.nn.attention.sdpa_kernel(config.backends()):
             out = F.scaled_dot_product_attention(
                 q, k, v,
                 dropout_p = self.dropout if self.training else 0.
